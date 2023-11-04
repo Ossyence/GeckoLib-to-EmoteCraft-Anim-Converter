@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeckoLib-to-EmoteCraft-Anim-Converter", "GeckoLib-to-EmoteCraft-Anim-Converter\GeckoLib-to-EmoteCraft-Anim-Converter.csproj", "{D2006628-D2F9-42C9-ACB9-24C10D231887}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2006628-D2F9-42C9-ACB9-24C10D231887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2006628-D2F9-42C9-ACB9-24C10D231887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2006628-D2F9-42C9-ACB9-24C10D231887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2006628-D2F9-42C9-ACB9-24C10D231887}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {68489B6B-0AB5-4DD2-AC3C-0EC622DE9F6E}
+	EndGlobalSection
+EndGlobal
