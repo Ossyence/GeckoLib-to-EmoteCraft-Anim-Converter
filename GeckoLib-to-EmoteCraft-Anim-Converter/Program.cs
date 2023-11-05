@@ -13,6 +13,59 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
 {
     internal class Program
     {
+        class Vector3
+        {
+            public double x = 0;
+            public double y = 0;
+            public double z = 0;
+
+            public Vector3(double Sx = 0, double Sy = 0, double Sz = 0)
+            {
+                x = Sx;
+                y = Sy;
+                z = Sz;
+            }
+
+            public Vector3 Inverse() { x *= -1; y *= -1; z *= -1; return this; }
+
+            public Vector3 Add(Vector3 vec) { x += vec.x; y += vec.y; z += vec.z; return this; }
+
+            public Vector3 Subtract(Vector3 vec) { x -= vec.x; y -= vec.y; z -= vec.z; return this; }
+
+            public Vector3 Multiply(Vector3 vec) { x *= vec.x; y *= vec.y; z *= vec.z; return this; }
+            public Vector3 Multiply(double factor) { x *= factor; y *= factor; z *= factor; return this; }
+
+            public Vector3 Divide(Vector3 vec) { x /= vec.x; y /= vec.y; z /= vec.z; return this; }
+            public Vector3 Divide(double factor) { x /= factor; y /= factor; z /= factor; return this; }
+        }
+
+        static Dictionary<string, Vector3[]> offsets = new Dictionary<string, Vector3[]>()
+        {
+            { "body", new Vector3[] { new Vector3(), new Vector3() } },
+
+            { "leftLeg",  new Vector3[] { new Vector3(-5, 12), new Vector3() } },
+            { "left_leg", new Vector3[] { new Vector3(-5, 12), new Vector3() } },
+
+            { "rightLeg",  new Vector3[] { new Vector3(5, 12), new Vector3() } },
+            { "right_leg", new Vector3[] { new Vector3(5, 12), new Vector3() } },
+
+            { "leftArm",  new Vector3[] { new Vector3(-5), new Vector3() } },
+            { "left_arm", new Vector3[] { new Vector3(-5), new Vector3() } },
+
+            { "rightArm",  new Vector3[] { new Vector3(5), new Vector3() }  },
+            { "right_arm", new Vector3[] { new Vector3(5), new Vector3() }  },
+
+            { "rightItem",  new Vector3[] { new Vector3(), new Vector3() }  },
+            { "right_item", new Vector3[] { new Vector3(), new Vector3() }  },
+
+            { "leftItem",  new Vector3[] { new Vector3(), new Vector3() }  },
+            { "left_item", new Vector3[] { new Vector3(), new Vector3() }  },
+
+            { "torso", new Vector3[] { new Vector3(0, 12), new Vector3() } },
+
+            { "head", new Vector3[] { new Vector3(), new Vector3() } },
+        };
+
         static int TimeToTick(double time)
         {
             return (int)Math.Floor(time * 24);
@@ -33,7 +86,7 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
             string description = AskNonrestrictive($"Describe this animation");
             int easeIn = TimeToTick(ToDouble(AskNonrestrictive($"How much time to ease into the anim?")));
             int easeOut = TimeToTick(ToDouble(AskNonrestrictive($"How much time to ease out of the anim?")));
-            
+            bool applyOffsetsPref = Ask($"Do you want to automatically apply the player offsets (ONLY WORKS FOR PLAYERS)");
             bool looped = Ask($"Looped?");
 
             Console.WriteLine($"\nBegining conversion...\n\nParsing JSON...");
@@ -58,7 +111,7 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
                 JObject rot = (JObject)children["rotation"];
                 JObject pos = (JObject)children["position"];
 
-                void AssistMe(JObject lookup, string xName, string yName, string zName) {
+                void AssistMe(JObject lookup, string xName, string yName, string zName, bool isPosition) {
                     foreach (JProperty values in (JToken)lookup)
                     {
                         JObject done = new JObject();
@@ -87,28 +140,41 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
                             easing = null;
                         }
 
-                        double xPos = (double)vector[0];
-                        double yPos = (double)vector[1];
-                        double zPos = (double)vector[2];
+                        Vector3 xyz = new Vector3((double)vector[0], (double)vector[1], (double)vector[2]);
+
+                        if (applyOffsetsPref) {
+                            if (offsets.ContainsKey(bodyPartName))
+                            {
+                                Vector3[] partOffsets = offsets[bodyPartName];
+                                Vector3 offset = new Vector3();
+
+                                if (isPosition)
+                                    offset = partOffsets[0];
+                                else
+                                    offset = partOffsets[1];
+
+                                xyz.Add(offset);
+                            }
+                        }
 
                         done.Add("tick", tick);
 
-                        if (easing != null) { done.Add("easing", (string)easing.ToUpper()); }
+                        if (easing != null) { done.Add("easing", easing.ToUpper()); }
 
                         done.Add("turn", 0);
                         done.Add(bodyPartName, new JObject
                         {
-                            { xName, xPos },
-                            { yName, yPos },
-                            { zName, zPos }
+                            { xName, xyz.x },
+                            { yName, xyz.y },
+                            { zName, xyz.z }
                         });
 
                         moves.Add(done);
                     }
                 }
 
-                if (rot != null) AssistMe(rot, "pitch", "yaw", "roll");
-                if (pos != null) AssistMe(pos, "x", "y", "z");
+                if (rot != null) AssistMe(rot, "pitch", "yaw", "roll", false);
+                if (pos != null) AssistMe(pos, "x", "y", "z", true);
             }
 
             Console.WriteLine($"Sorting moves by tick...");
@@ -158,13 +224,18 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
 
             Console.WriteLine($"Writing to file...");
 
-            string newPath = path.Replace(name, name + "_updated");
+            string newName = name + "_degeckoed";
 
-            if (File.Exists(newPath)) { File.Delete(newPath); }
+            string newPath = path.Replace(name, newName);
+
+            if (File.Exists(newPath)) {
+                Console.WriteLine($"Overwriting previous conversion..."); 
+                File.Delete(newPath); 
+            }
 
             File.WriteAllText(newPath, array.ToString());
 
-            Console.WriteLine($"Fully converted \"{name}\"!\n");
+            Console.WriteLine($"Fully converted \"{name}\" saved as \"{newName}\"!\n");
         }
 
         static string BoolString(bool b)
