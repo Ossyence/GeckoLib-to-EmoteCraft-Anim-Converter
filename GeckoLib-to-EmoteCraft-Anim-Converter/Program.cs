@@ -66,6 +66,11 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
             { "head", new Vector3[] { new Vector3(), new Vector3() } },
         };
 
+        static double DegreeToRadians(double degree)
+        {
+            return (Math.PI / 180) * degree;
+        }
+
         static int TimeToTick(double time)
         {
             return (int)Math.Floor(time * 24);
@@ -161,13 +166,23 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
 
                         if (easing != null) { done.Add("easing", easing.ToUpper()); }
 
-                        done.Add("turn", 0);
-                        done.Add(bodyPartName, new JObject
+                        JObject val = new JObject();
+
+                        if (!isPosition)
                         {
-                            { xName, xyz.x },
-                            { yName, xyz.y },
-                            { zName, xyz.z }
-                        });
+                            xyz = new Vector3(
+                                DegreeToRadians(xyz.x),
+                                DegreeToRadians(xyz.y),
+                                DegreeToRadians(xyz.z)
+                            ).Inverse();
+                        }
+
+                        if (Math.Abs(xyz.x) > 0) val.Add(xName, xyz.x);
+                        if (Math.Abs(xyz.y) > 0) val.Add(yName, xyz.y);
+                        if (Math.Abs(xyz.z) > 0) val.Add(zName, xyz.z);
+
+                        done.Add("turn", 0);
+                        done.Add(bodyPartName, val);
 
                         moves.Add(done);
                     }
@@ -210,7 +225,7 @@ namespace GeckoLib_to_EmoteCraft_Anim_Converter
                 { "stopTick", easeOut },
                 { "returnTick", 0 },
                 { "endTick", length },
-                { "degrees", true },
+                { "degrees", false },
                 { "moves", moveArray },
             };
 
