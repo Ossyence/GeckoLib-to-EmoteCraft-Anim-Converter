@@ -4,3 +4,6 @@ Converts GeckoLib entity animations to EmoteCraft animations, this is mostly so 
 
 # THIS IS VERY SCUFFED
 (i made this in 3 hours)
+
+# I AM VERY DUMB AND DIDNT REALISE I COULD READ THE DOCUMENTATION 😭😭😭
+(USE [THIS GUIDE MADE BY THEM,](https://github.com/KosmX/emotes/tree/dev/blender) FOR THIS ITS MUCH EASIER AND MORE ACCURATE)
